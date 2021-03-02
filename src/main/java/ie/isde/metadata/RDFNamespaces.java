@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package ie.isde.metadata.translator;
+package ie.isde.metadata;
 
 /**
  * Enumerates the RDF namespaces required for the translated Irish Spatial Data
@@ -22,7 +22,11 @@ public enum RDFNamespaces {
     /**
      * RDF Schema vocabulary
      */
-    RDFS ("rdfs", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
+    RDFS ("rdfs", "http://www.w3.org/1999/02/22-rdf-syntax-ns#"),
+    /**
+     * Schema,org vocabulary
+     */
+    SDO ("sdo", "https://schema.org/");
     
     private final String preferredNamespace;
     private final String uri;

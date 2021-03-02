@@ -5,12 +5,22 @@
  */
 package ie.isde.metadata.translator;
 
+import java.io.StringWriter;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import ie.isde.metadata.Dataset;
+import ie.isde.metadata.RDFNamespaces;
 
 import org.apache.jena.rdf.model.*;
-
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
+
+import com.github.jsonldjava.utils.JsonUtils;
+import com.github.jsonldjava.core.JsonLdOptions;
+import com.github.jsonldjava.core.JsonLdProcessor;
+
 /**
  * This class facilitates different serializations of Irish Spatial Data 
  * Exchange metadata.
@@ -19,106 +29,7 @@ import org.apache.jena.riot.RDFDataMgr;
  * @version 1.0
  * @since 1.0
  */
-public class Translator implements ITranslator { //TODO: Add ecteds Dataser
-/**
- * @param recordFile
- * @version 1.0
- * @since 1.0
- */    
-    private Dataset dataset;
-    private Model model;
-    private Resource root;
-    
-    public Translator(String recordFile) 
-                        throws java.net.MalformedURLException,
-                               org.xml.sax.SAXException,
-                               javax.xml.parsers.ParserConfigurationException,
-                               java.io.IOException,
-                               javax.xml.xpath.XPathException
-    {   
-        Dataset ds = new Dataset();
-        ds.fromISO(recordFile);
-        
-        this.setDataset(ds);
-        this.setModel(ModelFactory.createDefaultModel());
-        this.setRoot();
-    }    
-/*
-   Set methods 
- */
-    private void setDataset(Dataset dataset){ this.dataset = dataset; }
-    private void setModel(Model model){ this.model = model; }; 
-    private void setRoot(){ this.root = this.model().createResource(this.dataset().baseUri()); }
-    
-/*
-   Get methods
- */ 
-    private Dataset dataset(){ return this.dataset; }
-    private Model model(){ return this.model; }
-    private Resource root(){ return this.root; }
-
-    
-    @Override
-    public String toDCAT(){
-/*
-  The entity is of RDFS type dcat:Dataset
- */ 
-        this.setModel(ModelFactory.createDefaultModel());
-        Model m = this.model();
-        Property P = 
-                    m.createProperty( RDFNamespaces.RDFS.nsURI() + "type" );
-        Property O = 
-          m.createProperty( RDFNamespaces.DCAT.nsURI() + "Dataset" );
-        m.add(this.root(), P, O);
-        this.setModel(m);
-        this.getTitle("-d");
-        this.getAbstract("-d");
-        m = this.model();
-        m.setNsPrefix(RDFNamespaces.DCT.ns(), RDFNamespaces.DCT.nsURI());
-        m.setNsPrefix(RDFNamespaces.DCAT.ns(), RDFNamespaces.DCAT.nsURI());
-        m.setNsPrefix(RDFNamespaces.RDFS.ns(), RDFNamespaces.RDFS.nsURI());
-        RDFDataMgr.write(System.out, m, Lang.TTL);
-        return "";
-    } 
-    
-    @Override
-    public String toSchemaOrg(){
-        this.setModel(ModelFactory.createDefaultModel());
-        return "";
-    }
-    
-    private void getTitle(String flag){
-        Model m = this.model();
-        Resource r = this.root();
-        switch(flag){
-            case "-d":{
-                Property p = 
-                    m.createProperty(RDFNamespaces.DCT.nsURI() + "title");
-                Literal o =
-                    m.createLiteral(this.dataset().title());
-                m.add(r,p,o);
-                break;
-            }
-        }
-        this.setModel(m);
-    }
-    
-     private void getAbstract(String flag){
-        Model m = this.model();
-        Resource r = this.root();
-        switch(flag){
-            case "-d":{
-                Property p = 
-                    m.createProperty(RDFNamespaces.DCT.nsURI() + "abstract");
-                Literal o =
-                    m.createLiteral(this.dataset().metadataAbstract());
-                m.add(r,p,o);
-                break;
-            }
-        }
-        this.setModel(m);
-    }
-    
+public class Translator {
 /**
  * Translates an ISO XML record from the Irish Spatial Data Exchange to either
  * World Wide Web Consortium (W3C) Data Catalog Vocabulary (DCAT) profile as
@@ -166,16 +77,30 @@ public class Translator implements ITranslator { //TODO: Add ecteds Dataser
   translation result
 
 */
+        Dataset ds = new Dataset();
+        ds.fromISO(args[0]);
         switch (args[1].toLowerCase()) {
             case "-s":
                 {
-                    Translator iT = new Translator(args[0]);
+                    Map context = new HashMap();
+                    context.put("@vocab",RDFNamespaces.SDO.nsURI());
+                    
+                    StringWriter sW = new StringWriter();
+                    
+                    Model m = ds.toSchemaOrg();
+                    RDFDataMgr.write(sW, m, Lang.JSONLD);
+                    
+                    Object jsonObject = JsonUtils.fromString(sW.toString());
+                    JsonLdOptions options = new JsonLdOptions();
+                    Object compact = JsonLdProcessor.compact(jsonObject, context, options);
+                    System.out.println(JsonUtils.toPrettyString(compact));
+                    
                     break;
                 }
             case "-d":
                 {
-                    Translator iT = new Translator(args[0]);
-                    iT.toDCAT();
+                    Model m = ds.toDCAT();
+                    RDFDataMgr.write(System.out, m, Lang.TTL);
                     break;
                 }
             default:

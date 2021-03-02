@@ -3,19 +3,18 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package ie.isde.metadata.translator;
+package ie.isde.metadata;
+
+import org.apache.jena.rdf.model.*;
 
 /**
- * IsoBase provides an interface to specify the public facing class for 
- * translating ISO19115/19139 metadata to other representations.
+ * This interface is used for all base metadata entity types within the Irish 
+ * Spatial Data Exchange system
  * 
  * @author Adam Leadbetter
- * @version 1.0
- * @since 1.0
  */
-
-public interface ITranslator {
-    /**
+public interface Metadata {
+     /**
      * Translates the Irish Spatial Data Exchange metadata record supplied in
      * ISO19115/19139 XML to a W3C Data Catalog Vocabulary representation
      * 
@@ -24,7 +23,7 @@ public interface ITranslator {
      * @version 1.0
      * @since 1.0
      */
-    public String toDCAT();
+    public Model toDCAT();
     /**
      * Translates the Irish Spatial Data Exchange metadata record supplied in
      * ISO19115/19139 XML to a Schema.org representation
@@ -32,5 +31,5 @@ public interface ITranslator {
      * @return String   The Schema.org representation of the ISO metadata as a 
      *                  JSON-LD serialization
      */
-    public String toSchemaOrg();
+    public Model toSchemaOrg();
 }
