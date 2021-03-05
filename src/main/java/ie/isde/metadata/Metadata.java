@@ -18,8 +18,8 @@ public interface Metadata {
      * Translates the Irish Spatial Data Exchange metadata record supplied in
      * ISO19115/19139 XML to a W3C Data Catalog Vocabulary representation
      * 
-     * @return String   The DCAT representation of the ISO metadata as a Terse
-     *                  Triple Language serialization
+     * @return Model   The DCAT representation of the ISO metadata 
+     * 
      * @version 1.0
      * @since 1.0
      */
@@ -28,8 +28,8 @@ public interface Metadata {
      * Translates the Irish Spatial Data Exchange metadata record supplied in
      * ISO19115/19139 XML to a Schema.org representation
      * 
-     * @return String   The Schema.org representation of the ISO metadata as a 
-     *                  JSON-LD serialization
+     * @return Model   The Schema.org representation of the ISO metadata
+     * 
      */
     public Model toSchemaOrg();
 }

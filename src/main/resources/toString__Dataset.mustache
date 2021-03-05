@@ -1,0 +1,35 @@
+title: "{{title}}"
+abstract: "{{metadataAbstract}}"
+datePublished: {{dateIssued}}
+fileIdentifier: "{{fileIdentifier}}"
+url: {{baseUri}}
+keywords:
+{{#keywordCollection}}
+    - thesaurusTitle: "{{title}}"
+      thesaurusUrl: {{url}}
+	  thesaurusKeywords:
+    {{#keyword}}
+            - keywordPreferredLabel: "{{preferredLabel}}"
+              keywordUrl: {{url}}
+	{{/keyword}}
+{{/keywordCollection}}
+theme:
+{{#theme}}
+    - thesaurusTitle: "{{title}}"
+      thesaurusUrl: {{url}}
+	  thesaurusKeywords:
+    {{#keyword}}
+            - keywordPreferredLabel: "{{preferredLabel}}"
+              keywordUrl: {{url}}
+	{{/keyword}}
+{{/theme}}
+variableMeasured:
+{{#variableMeasured}}
+    - thesaurusTitle: "{{title}}"
+      thesaurusUrl: {{url}}
+	  thesaurusKeywords:
+    {{#keyword}}
+            - keywordPreferredLabel: "{{preferredLabel}}"
+              keywordUrl: {{url}}
+	{{/keyword}}
+{{/variableMeasured}}

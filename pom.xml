@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>ie.isde</groupId>
-    <artifactId>ISDEMetadataTranslator</artifactId>
+    <artifactId>metadata</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <properties>
@@ -27,5 +27,48 @@
             <artifactId>slf4j-simple</artifactId>
             <version>1.7.30</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.spullara.mustache.java</groupId>
+            <artifactId>compiler</artifactId>
+            <version>0.8.18</version>
+        </dependency>
+        <dependency>
+            <groupId>com.aventrix.jnanoid</groupId>
+            <artifactId>jnanoid</artifactId>
+            <version>2.0.0</version>
+        </dependency>
     </dependencies>
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/adamml/isde-translator/issues</url>
+    </issueManagement>
+    <developers>
+        <developer>
+            <id>adamml</id>
+            <name>Adam Leadbetter</name>
+            <url>https://github.com/adamml</url>
+            <organization>Marine Institue</organization>
+            <organizationUrl>https://www.marine.ie</organizationUrl>
+            <roles>
+                <role>architect</role>
+                <role>developer</role>
+            </roles>
+            <timezone>Europe/Dublin</timezone>
+        </developer>
+    </developers>
+    <organization>
+        <name>Irish Spatial Data Exchange</name>
+        <url>http://www.isde.ie</url>
+    </organization>
+    <name>Irish Spatial Data Exchange metadata</name>
+    <inceptionYear>2021</inceptionYear>
+    <url>https://github.com/adamml/isde-translator</url>
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
 </project>

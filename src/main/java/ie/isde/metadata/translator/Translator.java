@@ -1,7 +1,17 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright 2021 Irish Spatial Data Exchange.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package ie.isde.metadata.translator;
 
@@ -70,8 +80,12 @@ public class Translator {
   Check that the second input value is a flag. Valid flag values are:
       -d      Translates the ISO XML supplied in the first argument to W3C
               DCAT, serialized as TTL
+        
       -s      Translates the ISO XML supplied in the first argument to a
               Schema.org compliant JSON-LD object
+        
+      -y      Translates the ISO XML supplied in the first argument to a 
+              YAML file      
 
   If the flag is valid, construct an IsoTranslator =object and print the
   translation result
@@ -85,14 +99,21 @@ public class Translator {
                     Map context = new HashMap();
                     context.put("@vocab",RDFNamespaces.SDO.nsURI());
                     
+                    Map<String, Object> frame = new HashMap<>();
+                    frame.put("@type" , "Dataset");
+                    frame.put("@context", context);
+                    
                     StringWriter sW = new StringWriter();
                     
                     Model m = ds.toSchemaOrg();
                     RDFDataMgr.write(sW, m, Lang.JSONLD);
                     
                     Object jsonObject = JsonUtils.fromString(sW.toString());
-                    JsonLdOptions options = new JsonLdOptions();
-                    Object compact = JsonLdProcessor.compact(jsonObject, context, options);
+                    
+                    JsonLdOptions opts = new JsonLdOptions();
+                    opts.setPruneBlankNodeIdentifiers(true);                   
+                            
+                    Object compact = JsonLdProcessor.frame(jsonObject, frame, opts);
                     System.out.println(JsonUtils.toPrettyString(compact));
                     
                     break;
@@ -101,6 +122,11 @@ public class Translator {
                 {
                     Model m = ds.toDCAT();
                     RDFDataMgr.write(System.out, m, Lang.TTL);
+                    break;
+                }
+            case "-y":
+                {
+                    System.out.println(ds.toString());
                     break;
                 }
             default:

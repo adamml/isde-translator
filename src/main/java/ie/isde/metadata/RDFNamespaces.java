@@ -26,7 +26,11 @@ public enum RDFNamespaces {
     /**
      * Schema,org vocabulary
      */
-    SDO ("sdo", "https://schema.org/");
+    SDO ("sdo", "https://schema.org/"),
+    /**
+     * W3C Simple Knowledge Organisation System vocabulary
+     */
+    SKOS ("skos", "http://www.w3.org/2004/02/skos/core#");
     
     private final String preferredNamespace;
     private final String uri;
