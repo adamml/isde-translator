@@ -15,5 +15,5 @@ setup(
    author='Adam Leadbetter',
    url="https://github.com/adamml/isde-translator",
    packages=['ie.isde'],  #same as name
-   install_requires=['wheel', 'bar', 'greek']
+   install_requires=requirements
 )
