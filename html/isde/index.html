@@ -31,24 +31,14 @@
 A package for working with metadata from the Irish Spatial Data Exchange
 &#34;&#34;&#34;
 
-from .Namespaces import ISDERDFNamespaces, ISDEXMLNamespaces
-from .ISDEDatasetParser import ISDEDatasetParser
+from .ISDERDFNamespaces import ISDERDFNamespaces
 from .ISDEDatasetMetadata import ISDEDatasetMetadata
 
-__all__ = [&#39;ISDERDFNamespaces&#39;, 
-           &#39;ISDEDatasetParser&#39;, 
-           &#39;ISDEXMLNamespaces&#39;,
+__all__ = [&#39;ISDERDFNamespaces&#39;,
            &#39;ISDEDatasetMetadata&#39;]</code></pre>
 </details>
 </section>
 <section>
-<h2 class="section-title" id="header-submodules">Sub-modules</h2>
-<dl>
-<dt><code class="name"><a title="isde.Namespaces" href="Namespaces.html">isde.Namespaces</a></code></dt>
-<dd>
-<div class="desc"><p>Enumerates the Resource Description Framework and XML namespaces in use in ISDE</p></div>
-</dd>
-</dl>
 </section>
 <section>
 </section>
@@ -84,6 +74,10 @@ the Dataset metadata</p></div>
     &#34;&#34;&#34;
     The vase URI to use in building a graph data model representation of the Dataset object
     &#34;&#34;&#34;
+    dateIssued: str = None
+    &#34;&#34;&#34;
+    The date on which the metadata record was issued
+    &#34;&#34;&#34;
     identifier: str = None
     &#34;&#34;&#34;
     A unique identifier to this Dataset object
@@ -91,6 +85,10 @@ the Dataset metadata</p></div>
     title: str = None
     &#34;&#34;&#34;
     The lexical title of the Dataset object
+    &#34;&#34;&#34;
+    topicCategories: list = None
+    &#34;&#34;&#34;
+    A list of strings giving the lexical labels of topic categories for this Dataset object
     &#34;&#34;&#34;
     
     def __init__(self):
@@ -105,12 +103,33 @@ the Dataset metadata</p></div>
             url: A string representing the URL from which to read the ISO 19139 XML file
         &#34;&#34;&#34;
         with urllib.request.urlopen(url) as metadata:
-            e = xml.etree.ElementTree.parse(metadata).getroot()
-            self.title = str(e.findall(ISDEDatasetParser.TITLE,ISDEXMLNamespaces.NAMESPACES)[0].text)
-            self.abstract = str(e.findall(ISDEDatasetParser.ABSTRACT,ISDEXMLNamespaces.NAMESPACES)[0].text)
-            self.identifier = str(e.findall(ISDEDatasetParser.IDENTIFIER,ISDEXMLNamespaces.NAMESPACES)[0].text)
-        
-        
+            md = MD_Metadata(etree.parse(metadata))
+        # Extract Title
+            try:
+                self.title = md.identification.title
+            except:
+                pass
+        # Extract Abstract
+            try:
+                self.abstract = md.identification.abstract
+            except:
+                pass
+        # Extract Identifier
+            try:
+                self.identifier = md.identifier
+            except:
+                pass
+        # Extract Topic Categories
+            try:
+                self.topicCategories = md.identification.topiccategory
+            except:
+                pass
+        # Extract the Date Issued
+            try:
+                self.dateIssued = md.datestamp
+            except:
+                pass
+                    
         self.baseURI = url
         return self
     
@@ -128,9 +147,17 @@ the Dataset metadata</p></div>
         g.bind(ISDERDFNamespaces.RDFS[&#39;ns&#39;],ISDERDFNamespaces.RDFS[&#39;url&#39;])
         
         g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.RDFS[&#39;url&#39;]+&#39;type&#39;),URIRef(ISDERDFNamespaces.DCAT[&#39;url&#39;] + &#39;Dataset&#39;)))
-        g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.DCT[&#39;url&#39;]+&#39;title&#39;),Literal(self.title)))
-        g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.DCT[&#39;url&#39;]+&#39;description&#39;),Literal(self.abstract)))
-        g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.DCT[&#39;url&#39;]+&#39;identifier&#39;),Literal(self.identifier)))
+        if self.title is not None:
+            g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.DCT[&#39;url&#39;]+&#39;title&#39;),Literal(self.title)))
+        if self.abstract is not None:
+            g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.DCT[&#39;url&#39;]+&#39;description&#39;),Literal(self.abstract)))
+        if self.identifier is not None:
+            g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.DCT[&#39;url&#39;]+&#39;identifier&#39;),Literal(self.identifier)))
+        if self.dateIssued is not None:
+            g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.DCT[&#39;url&#39;]+&#39;issued&#39;),Literal(self.dateIssued)))
+        
+        for topic in self.topicCategories:
+            g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.DCAT[&#39;url&#39;]+&#39;theme&#39;),Literal(topic)))
         
         return g
     
@@ -144,10 +171,17 @@ the Dataset metadata</p></div>
         &#34;&#34;&#34;
         g = Graph()
         
-        g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.SDO[&#39;url&#39;]+&#39;name&#39;),Literal(self.title)))
-        g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.SDO[&#39;url&#39;]+&#39;description&#39;),Literal(self.abstract)))
-        g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.SDO[&#39;url&#39;]+&#39;identifier&#39;),Literal(self.identifier)))
+        if self.title is not None:
+            g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.SDO[&#39;url&#39;]+&#39;name&#39;),Literal(self.title)))
+        if self.abstract is not None:
+            g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.SDO[&#39;url&#39;]+&#39;description&#39;),Literal(self.abstract)))
+        if self.identifier is not None:
+            g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.SDO[&#39;url&#39;]+&#39;identifier&#39;),Literal(self.identifier)))
+        if self.dateIssued is not None:
+            g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.SDO[&#39;url&#39;]+&#39;datePublished&#39;),Literal(self.dateIssued)))
         
+        for topic in self.topicCategories:
+            g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.SDO[&#39;url&#39;]+&#39;keywords&#39;),Literal(topic)))
         return g</code></pre>
 </details>
 <h3>Class variables</h3>
@@ -160,6 +194,10 @@ the Dataset metadata</p></div>
 <dd>
 <div class="desc"><p>The vase URI to use in building a graph data model representation of the Dataset object</p></div>
 </dd>
+<dt id="isde.ISDEDatasetMetadata.dateIssued"><code class="name">var <span class="ident">dateIssued</span> : str</code></dt>
+<dd>
+<div class="desc"><p>The date on which the metadata record was issued</p></div>
+</dd>
 <dt id="isde.ISDEDatasetMetadata.identifier"><code class="name">var <span class="ident">identifier</span> : str</code></dt>
 <dd>
 <div class="desc"><p>A unique identifier to this Dataset object</p></div>
@@ -167,6 +205,10 @@ the Dataset metadata</p></div>
 <dt id="isde.ISDEDatasetMetadata.title"><code class="name">var <span class="ident">title</span> : str</code></dt>
 <dd>
 <div class="desc"><p>The lexical title of the Dataset object</p></div>
+</dd>
+<dt id="isde.ISDEDatasetMetadata.topicCategories"><code class="name">var <span class="ident">topicCategories</span> : list</code></dt>
+<dd>
+<div class="desc"><p>A list of strings giving the lexical labels of topic categories for this Dataset object</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -195,12 +237,33 @@ populates the ISDEDatasetMetadata class attributes appropiately.</p>
         url: A string representing the URL from which to read the ISO 19139 XML file
     &#34;&#34;&#34;
     with urllib.request.urlopen(url) as metadata:
-        e = xml.etree.ElementTree.parse(metadata).getroot()
-        self.title = str(e.findall(ISDEDatasetParser.TITLE,ISDEXMLNamespaces.NAMESPACES)[0].text)
-        self.abstract = str(e.findall(ISDEDatasetParser.ABSTRACT,ISDEXMLNamespaces.NAMESPACES)[0].text)
-        self.identifier = str(e.findall(ISDEDatasetParser.IDENTIFIER,ISDEXMLNamespaces.NAMESPACES)[0].text)
-    
-    
+        md = MD_Metadata(etree.parse(metadata))
+    # Extract Title
+        try:
+            self.title = md.identification.title
+        except:
+            pass
+    # Extract Abstract
+        try:
+            self.abstract = md.identification.abstract
+        except:
+            pass
+    # Extract Identifier
+        try:
+            self.identifier = md.identifier
+        except:
+            pass
+    # Extract Topic Categories
+        try:
+            self.topicCategories = md.identification.topiccategory
+        except:
+            pass
+    # Extract the Date Issued
+        try:
+            self.dateIssued = md.datestamp
+        except:
+            pass
+                
     self.baseURI = url
     return self</code></pre>
 </details>
@@ -231,9 +294,17 @@ Data Catalog Vocabulary (DCAT) Dataset</p></div>
     g.bind(ISDERDFNamespaces.RDFS[&#39;ns&#39;],ISDERDFNamespaces.RDFS[&#39;url&#39;])
     
     g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.RDFS[&#39;url&#39;]+&#39;type&#39;),URIRef(ISDERDFNamespaces.DCAT[&#39;url&#39;] + &#39;Dataset&#39;)))
-    g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.DCT[&#39;url&#39;]+&#39;title&#39;),Literal(self.title)))
-    g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.DCT[&#39;url&#39;]+&#39;description&#39;),Literal(self.abstract)))
-    g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.DCT[&#39;url&#39;]+&#39;identifier&#39;),Literal(self.identifier)))
+    if self.title is not None:
+        g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.DCT[&#39;url&#39;]+&#39;title&#39;),Literal(self.title)))
+    if self.abstract is not None:
+        g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.DCT[&#39;url&#39;]+&#39;description&#39;),Literal(self.abstract)))
+    if self.identifier is not None:
+        g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.DCT[&#39;url&#39;]+&#39;identifier&#39;),Literal(self.identifier)))
+    if self.dateIssued is not None:
+        g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.DCT[&#39;url&#39;]+&#39;issued&#39;),Literal(self.dateIssued)))
+    
+    for topic in self.topicCategories:
+        g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.DCAT[&#39;url&#39;]+&#39;theme&#39;),Literal(topic)))
     
     return g</code></pre>
 </details>
@@ -260,56 +331,19 @@ Schema.org Dataset</p></div>
     &#34;&#34;&#34;
     g = Graph()
     
-    g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.SDO[&#39;url&#39;]+&#39;name&#39;),Literal(self.title)))
-    g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.SDO[&#39;url&#39;]+&#39;description&#39;),Literal(self.abstract)))
-    g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.SDO[&#39;url&#39;]+&#39;identifier&#39;),Literal(self.identifier)))
+    if self.title is not None:
+        g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.SDO[&#39;url&#39;]+&#39;name&#39;),Literal(self.title)))
+    if self.abstract is not None:
+        g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.SDO[&#39;url&#39;]+&#39;description&#39;),Literal(self.abstract)))
+    if self.identifier is not None:
+        g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.SDO[&#39;url&#39;]+&#39;identifier&#39;),Literal(self.identifier)))
+    if self.dateIssued is not None:
+        g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.SDO[&#39;url&#39;]+&#39;datePublished&#39;),Literal(self.dateIssued)))
     
+    for topic in self.topicCategories:
+        g.add((URIRef(self.baseURI),URIRef(ISDERDFNamespaces.SDO[&#39;url&#39;]+&#39;keywords&#39;),Literal(topic)))
     return g</code></pre>
 </details>
-</dd>
-</dl>
-</dd>
-<dt id="isde.ISDEDatasetParser"><code class="flex name class">
-<span>class <span class="ident">ISDEDatasetParser</span></span>
-</code></dt>
-<dd>
-<div class="desc"><p>This class extends the IsoParser from <code>gis_metadata.iso_metadata_parser</code> to handle
-Irish Spatial Data Exchange Dataset Metadata.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class ISDEDatasetParser:
-    &#34;&#34;&#34;
-    This class extends the IsoParser from `gis_metadata.iso_metadata_parser` to handle
-    Irish Spatial Data Exchange Dataset Metadata.
-    &#34;&#34;&#34;
-    TITLE = &#34;./gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:title/gco:CharacterString&#34;
-    &#34;&#34;&#34;
-    XPath to get the lexical title of a dataset
-    &#34;&#34;&#34;
-    ABSTRACT = &#34;./gmd:identificationInfo/gmd:MD_DataIdentification/gmd:abstract/gco:CharacterString&#34;
-    &#34;&#34;&#34;
-    XPath to get the abstract of a dataset
-    &#34;&#34;&#34;
-    IDENTIFIER = &#34;./gmd:fileIdentifier/gco:CharacterString&#34;
-    &#34;&#34;&#34;
-    XPath to get the file identifier of a dataset
-    &#34;&#34;&#34;</code></pre>
-</details>
-<h3>Class variables</h3>
-<dl>
-<dt id="isde.ISDEDatasetParser.ABSTRACT"><code class="name">var <span class="ident">ABSTRACT</span></code></dt>
-<dd>
-<div class="desc"><p>XPath to get the abstract of a dataset</p></div>
-</dd>
-<dt id="isde.ISDEDatasetParser.IDENTIFIER"><code class="name">var <span class="ident">IDENTIFIER</span></code></dt>
-<dd>
-<div class="desc"><p>XPath to get the file identifier of a dataset</p></div>
-</dd>
-<dt id="isde.ISDEDatasetParser.TITLE"><code class="name">var <span class="ident">TITLE</span></code></dt>
-<dd>
-<div class="desc"><p>XPath to get the lexical title of a dataset</p></div>
 </dd>
 </dl>
 </dd>
@@ -342,7 +376,7 @@ Exchange</p></div>
     &#34;&#34;&#34;
     SDO = {&#39;ns&#39;: &#39;sdo&#39;, &#39;url&#39;: &#39;https://schema.org/&#39;}
     &#34;&#34;&#34;
-    Schema.org vocabulary
+    Schema.org vocab
     &#34;&#34;&#34;</code></pre>
 </details>
 <h3>Class variables</h3>
@@ -361,29 +395,7 @@ Exchange</p></div>
 </dd>
 <dt id="isde.ISDERDFNamespaces.SDO"><code class="name">var <span class="ident">SDO</span></code></dt>
 <dd>
-<div class="desc"><p>Schema.org vocabulary</p></div>
-</dd>
-</dl>
-</dd>
-<dt id="isde.ISDEXMLNamespaces"><code class="flex name class">
-<span>class <span class="ident">ISDEXMLNamespaces</span></span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class ISDEXMLNamespaces:
-    NAMESPACES = {&#39;gmd&#39;: &#39;http://www.isotc211.org/2005/gmd&#39;,
-                  &#39;gco&#39;: &#39;http://www.isotc211.org/2005/gco&#39;,
-                  &#39;gmx&#39;: &#39;http://www.isotc211.org/2005/gmx&#39;}</code></pre>
-</details>
-<h3>Class variables</h3>
-<dl>
-<dt id="isde.ISDEXMLNamespaces.NAMESPACES"><code class="name">var <span class="ident">NAMESPACES</span></code></dt>
-<dd>
-<div class="desc"></div>
+<div class="desc"><p>Schema.org vocab</p></div>
 </dd>
 </dl>
 </dd>
@@ -396,11 +408,6 @@ Exchange</p></div>
 <ul></ul>
 </div>
 <ul id="index">
-<li><h3><a href="#header-submodules">Sub-modules</a></h3>
-<ul>
-<li><code><a title="isde.Namespaces" href="Namespaces.html">isde.Namespaces</a></code></li>
-</ul>
-</li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
@@ -408,19 +415,13 @@ Exchange</p></div>
 <ul class="two-column">
 <li><code><a title="isde.ISDEDatasetMetadata.abstract" href="#isde.ISDEDatasetMetadata.abstract">abstract</a></code></li>
 <li><code><a title="isde.ISDEDatasetMetadata.baseURI" href="#isde.ISDEDatasetMetadata.baseURI">baseURI</a></code></li>
+<li><code><a title="isde.ISDEDatasetMetadata.dateIssued" href="#isde.ISDEDatasetMetadata.dateIssued">dateIssued</a></code></li>
 <li><code><a title="isde.ISDEDatasetMetadata.fromISO" href="#isde.ISDEDatasetMetadata.fromISO">fromISO</a></code></li>
 <li><code><a title="isde.ISDEDatasetMetadata.identifier" href="#isde.ISDEDatasetMetadata.identifier">identifier</a></code></li>
 <li><code><a title="isde.ISDEDatasetMetadata.title" href="#isde.ISDEDatasetMetadata.title">title</a></code></li>
 <li><code><a title="isde.ISDEDatasetMetadata.toDCAT" href="#isde.ISDEDatasetMetadata.toDCAT">toDCAT</a></code></li>
 <li><code><a title="isde.ISDEDatasetMetadata.toSchemaOrg" href="#isde.ISDEDatasetMetadata.toSchemaOrg">toSchemaOrg</a></code></li>
-</ul>
-</li>
-<li>
-<h4><code><a title="isde.ISDEDatasetParser" href="#isde.ISDEDatasetParser">ISDEDatasetParser</a></code></h4>
-<ul class="">
-<li><code><a title="isde.ISDEDatasetParser.ABSTRACT" href="#isde.ISDEDatasetParser.ABSTRACT">ABSTRACT</a></code></li>
-<li><code><a title="isde.ISDEDatasetParser.IDENTIFIER" href="#isde.ISDEDatasetParser.IDENTIFIER">IDENTIFIER</a></code></li>
-<li><code><a title="isde.ISDEDatasetParser.TITLE" href="#isde.ISDEDatasetParser.TITLE">TITLE</a></code></li>
+<li><code><a title="isde.ISDEDatasetMetadata.topicCategories" href="#isde.ISDEDatasetMetadata.topicCategories">topicCategories</a></code></li>
 </ul>
 </li>
 <li>
@@ -430,12 +431,6 @@ Exchange</p></div>
 <li><code><a title="isde.ISDERDFNamespaces.DCT" href="#isde.ISDERDFNamespaces.DCT">DCT</a></code></li>
 <li><code><a title="isde.ISDERDFNamespaces.RDFS" href="#isde.ISDERDFNamespaces.RDFS">RDFS</a></code></li>
 <li><code><a title="isde.ISDERDFNamespaces.SDO" href="#isde.ISDERDFNamespaces.SDO">SDO</a></code></li>
-</ul>
-</li>
-<li>
-<h4><code><a title="isde.ISDEXMLNamespaces" href="#isde.ISDEXMLNamespaces">ISDEXMLNamespaces</a></code></h4>
-<ul class="">
-<li><code><a title="isde.ISDEXMLNamespaces.NAMESPACES" href="#isde.ISDEXMLNamespaces.NAMESPACES">NAMESPACES</a></code></li>
 </ul>
 </li>
 </ul>
