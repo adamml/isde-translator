@@ -2,11 +2,8 @@
 A package for working with metadata from the Irish Spatial Data Exchange
 """
 
-from .Namespaces import ISDERDFNamespaces, ISDEXMLNamespaces
-from .ISDEDatasetParser import ISDEDatasetParser
+from .ISDERDFNamespaces import ISDERDFNamespaces
 from .ISDEDatasetMetadata import ISDEDatasetMetadata
 
-__all__ = ['ISDERDFNamespaces', 
-           'ISDEDatasetParser', 
-           'ISDEXMLNamespaces',
+__all__ = ['ISDERDFNamespaces',
            'ISDEDatasetMetadata']
