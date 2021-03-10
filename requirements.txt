@@ -1,2 +1,4 @@
-rdflib>=5.0.0
+rdflib>=4.2.2
 rdflib-jsonld>=0.5.0
+PyYAML>=5.3.1
+owslib>=0.20.0
