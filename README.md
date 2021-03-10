@@ -5,3 +5,4 @@ A tool for translating Irish Spatial Data Exchange metadata
 
 ## Dependencies
 - [rdflib](https://pypi.org/project/rdflib/)
+- [rdflib-jsonld](https://pypi.org/project/rdflib-jsonld/)
