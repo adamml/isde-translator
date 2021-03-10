@@ -2,10 +2,6 @@ Module isde
 ===========
 A package for working with metadata from the Irish Spatial Data Exchange
 
-Sub-modules
------------
-* isde.Namespaces
-
 Classes
 -------
 
@@ -23,7 +19,7 @@ Classes
     :   The vase URI to use in building a graph data model representation of the Dataset object
 
     `dateIssued: str`
-    :   The date on which the metadta record was issued
+    :   The date on which the metadata record was issued
 
     `identifier: str`
     :   A unique identifier to this Dataset object
@@ -31,9 +27,12 @@ Classes
     `title: str`
     :   The lexical title of the Dataset object
 
+    `topicCategories: list`
+    :   A list of strings giving the lexical labels of topic categories for this Dataset object
+
     ### Methods
 
-    `fromISO(self, url: str)`
+    `fromISO(self, url:Â str)`
     :   The fromISO method reads an Irish Spatial Data Exchange record from a given URL and
         populates the ISDEDatasetMetadata class attributes appropiately.
         
@@ -54,24 +53,6 @@ Classes
             A `rdflib.Graph` of the ISDEDatasetMetadata object serialised as a
             Schema.org Dataset
 
-`ISDEDatasetParser()`
-:   This class extends the IsoParser from `gis_metadata.iso_metadata_parser` to handle
-    Irish Spatial Data Exchange Dataset Metadata.
-
-    ### Class variables
-
-    `ABSTRACT`
-    :   XPath to get the abstract of a dataset
-
-    `DATEISSUED`
-    :   XPAth to get the date a metadata object was issued
-
-    `IDENTIFIER`
-    :   XPath to get the file identifier of a dataset
-
-    `TITLE`
-    :   XPath to get the lexical title of a dataset
-
 `ISDERDFNamespaces()`
 :   Resource Description Framework namespaces in use in the Irish Spatial Data
     Exchange
@@ -88,12 +69,13 @@ Classes
     :   W3C Resource Description Framework Schema vocabulary
 
     `SDO`
-    :   Schema.org vocabulary
+    :   Schema.org vocab
 
 `ISDEXMLNamespaces()`
-:   
+:   Enumerates the XML namespaces in use in the Irish Spatial data exchange
 
     ### Class variables
 
     `NAMESPACES`
-    :
+    :
+
