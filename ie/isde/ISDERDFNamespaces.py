@@ -1,6 +1,8 @@
 """
 Enumerates the Resource Description Framework and XML namespaces in use in ISDE
 """
+
+
 class ISDERDFNamespaces:
     """
     Resource Description Framework namespaces in use in the Irish Spatial Data
