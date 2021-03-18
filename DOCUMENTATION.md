@@ -2,10 +2,6 @@ Module isde
 ===========
 A package for working with metadata from the Irish Spatial Data Exchange
 
-Sub-modules
------------
-* isde.IANAMimeTypes
-
 Classes
 -------
 
@@ -20,6 +16,18 @@ Classes
 
     `BOUNDING_BOX`
     :   The geographical bounding box of the metadata object
+
+`IANAMimeTypes(value, names=None, *, module=None, qualname=None, type=None, start=1)`
+:   This class enumerates the IANA MIME Types in use in the Irish Spatial Data Exchange
+
+    ### Ancestors (in MRO)
+
+    * enum.Enum
+
+    ### Class variables
+
+    `GEOJSON`
+    :   JavaScript Object Notation encoded to the GeoJSON standard for exchange of geographjc data
 
 `ISDEDatasetMetadata()`
 :   This class is for storing attributes relating to a Dataset object from the Irish
