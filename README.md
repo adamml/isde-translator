@@ -21,15 +21,15 @@ from yaml import dump, Dumper
 
 context = {"@vocab": ISDERDFNamespaces.SDO['url']}
 
-print(ISDEDatasetMetadata().fromISO(
-    r'https://irishspatialdataexchange.blob.core.windows.net/metadata/xml/ie_marine_data__dataset_1000.xml').toDCAT().serialize(
+print(ISDEDatasetMetadata().from_iso(
+    r'https://irishspatialdataexchange.blob.core.windows.net/metadata/xml/ie_marine_data__dataset_1000.xml').to_dcat().serialize(
     format='turtle').decode('utf-8'))
 
-print(ISDEDatasetMetadata().fromISO(
-    r'https://irishspatialdataexchange.blob.core.windows.net/metadata/xml/ie_marine_data__dataset_1000.xml').toSchemaOrg().serialize(
+print(ISDEDatasetMetadata().from_iso(
+    r'https://irishspatialdataexchange.blob.core.windows.net/metadata/xml/ie_marine_data__dataset_1000.xml').to_schema_org().serialize(
     format='json-ld', context=context).decode('utf-8'))
 
-print(dump(ISDEDatasetMetadata().fromISO(
+print(dump(ISDEDatasetMetadata().from_iso(
     r'https://irishspatialdataexchange.blob.core.windows.net/metadata/xml/ie_marine_data__dataset_1000.xml'),
-           Dumper=Dumper))
+    Dumper=Dumper))
 ```

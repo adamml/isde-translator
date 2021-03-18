@@ -3,7 +3,7 @@ Enumerates the Resource Description Framework and XML namespaces in use in ISDE
 """
 
 
-class ISDERDFNamespaces:
+class RDFNamespaces:
     """
     Resource Description Framework namespaces in use in the Irish Spatial Data
     Exchange
@@ -15,6 +15,14 @@ class ISDERDFNamespaces:
     DCT = {'ns': 'dct', 'url': 'http://purl.org/dc/terms/'}
     """
     Dublin Core Terms
+    """
+    GSP = {'ns': 'gsp', 'url': 'http://www.opengis.net/ont/geosparql#'}
+    """
+    Open Geospatial Consortium GeoSPARQL ontology
+    """
+    LOCN = {'ns': 'locn', 'url': 'http://www.w3.org/ns/locn#'}
+    """
+    W3C Interoperable Solutions for Administrations (ISA) Programme Location Core Vocabulary
     """
     RDFS = {'ns': 'rdfs', 'url': 'http://www.w3.org/2000/01/rdf-schema#'}
     """

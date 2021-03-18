@@ -2,11 +2,17 @@ import urllib.request
 
 from owslib.iso import MD_Metadata, etree
 
-from ie.isde.ISDERDFNamespaces import ISDERDFNamespaces
+from .ComplexTypes import ComplexTypes
 
-from rdflib import Graph, URIRef, Literal
+from .RDFNamespaces import RDFNamespaces
+
+from .IANAMimeTypes import IANAMimeTypes
+
+from rdflib import Graph, URIRef, Literal, BNode
 
 import warnings
+
+import json
 
 warnings.filterwarnings("ignore", message="the .identification", category=FutureWarning, module="owslib")
 warnings.filterwarnings("ignore", message="the .keywords", category=FutureWarning, module="owslib")
@@ -26,7 +32,11 @@ class ISDEDatasetMetadata:
     """
     baseURI: str = None
     """
-    The vase URI to use in building a graph data model representation of the Dataset object
+    The base URI to use in building a graph data model representation of the Dataset object
+    """
+    boundingBox: dict = None
+    """
+    The geographic bounding box encompassing the data described byb the metadata object
     """
     dateIssued: str = None
     """
@@ -52,13 +62,12 @@ class ISDEDatasetMetadata:
     def __init__(self):
         pass
 
-    def fromISO(self, url: str):
+    def from_iso(self, url: str):
         """
-        The fromISO method reads an Irish Spatial Data Exchange record from a given URL and
+        The from_iso method reads an Irish Spatial Data Exchange record from a given URL and
         populates the ISDEDatasetMetadata class attributes appropriately.
         
-        Args:
-            url: A string representing the URL from which to read the ISO 19139 XML file
+        :arg: url: A string representing the URL from which to read the ISO 19139 XML file
         """
         with urllib.request.urlopen(url) as metadata:
             md = MD_Metadata(etree.parse(metadata))
@@ -99,82 +108,140 @@ class ISDEDatasetMetadata:
                 print(md.distribution.online.name)
             except AttributeError:
                 pass
+            # Extract geograhic bounding box
+            try:
+                self.boundingBox = ComplexTypes.BOUNDING_BOX.value
+                self.boundingBox['north'] = md.identification.bbox.maxy
+                self.boundingBox['south'] = md.identification.bbox.miny
+                self.boundingBox['west'] = md.identification.bbox.minx
+                self.boundingBox['east'] = md.identification.bbox.maxx
+            except AttributeError:
+                pass
 
         self.baseURI = url
         return self
 
-    def toDCAT(self):
+    def to_dcat(self):
         """
         Converts an ISDEDatasetMetadata object to a W3C Data Catlog Vocabulary model
         
-        Returns:
-            A `rdflib.Graph` of the ISDEDatasetMetadata object serialised as a W3C
-            Data Catalog Vocabulary (DCAT) Dataset
+        :return: A `rdflib.Graph` of the ISDEDatasetMetadata object serialised as a W3C Data Catalog
+            Vocabulary (DCAT) Dataset
         """
         g = Graph()
-        g.bind(ISDERDFNamespaces.DCAT['ns'], ISDERDFNamespaces.DCAT['url'])
-        g.bind(ISDERDFNamespaces.DCT['ns'], ISDERDFNamespaces.DCT['url'])
-        g.bind(ISDERDFNamespaces.RDFS['ns'], ISDERDFNamespaces.RDFS['url'])
+        g.bind(RDFNamespaces.DCAT['ns'], RDFNamespaces.DCAT['url'])
+        g.bind(RDFNamespaces.DCT['ns'], RDFNamespaces.DCT['url'])
+        g.bind(RDFNamespaces.GSP['ns'], RDFNamespaces.GSP['url'])
+        g.bind(RDFNamespaces.LOCN['ns'], RDFNamespaces.LOCN['url'])
+        g.bind(RDFNamespaces.RDFS['ns'], RDFNamespaces.RDFS['url'])
 
-        g.add((URIRef(self.baseURI), URIRef(ISDERDFNamespaces.RDFS['url'] + 'type'),
-               URIRef(ISDERDFNamespaces.DCAT['url'] + 'Dataset')))
+        g.add((URIRef(self.baseURI), URIRef(RDFNamespaces.RDFS['url'] + 'type'),
+               URIRef(RDFNamespaces.DCAT['url'] + 'Dataset')))
         if self.title is not None:
-            g.add((URIRef(self.baseURI), URIRef(ISDERDFNamespaces.DCT['url'] + 'title'), Literal(self.title)))
+            g.add((URIRef(self.baseURI), URIRef(RDFNamespaces.DCT['url'] + 'title'), Literal(self.title)))
         if self.abstract is not None:
-            g.add((URIRef(self.baseURI), URIRef(ISDERDFNamespaces.DCT['url'] + 'description'), Literal(self.abstract)))
+            g.add((URIRef(self.baseURI), URIRef(RDFNamespaces.DCT['url'] + 'description'), Literal(self.abstract)))
         if self.identifier is not None:
-            g.add((URIRef(self.baseURI), URIRef(ISDERDFNamespaces.DCT['url'] + 'identifier'), Literal(self.identifier)))
+            g.add((URIRef(self.baseURI), URIRef(RDFNamespaces.DCT['url'] + 'identifier'), Literal(self.identifier)))
         if self.dateIssued is not None:
-            g.add((URIRef(self.baseURI), URIRef(ISDERDFNamespaces.DCT['url'] + 'issued'), Literal(self.dateIssued)))
+            g.add((URIRef(self.baseURI), URIRef(RDFNamespaces.DCT['url'] + 'issued'), Literal(self.dateIssued)))
         if self.keywords is not None:
             for kws in self.keywords:
                 for kw in kws.keyword:
-                    g.add((URIRef(self.baseURI), URIRef(ISDERDFNamespaces.DCAT['url'] + 'keyword'),
+                    g.add((URIRef(self.baseURI), URIRef(RDFNamespaces.DCAT['url'] + 'keyword'),
                            Literal(kw.name)))
 
         for topic in self.topicCategories:
-            g.add((URIRef(self.baseURI), URIRef(ISDERDFNamespaces.DCAT['url'] + 'theme'), Literal(topic)))
+            g.add((URIRef(self.baseURI), URIRef(RDFNamespaces.DCAT['url'] + 'theme'), Literal(topic)))
+
+        if self.boundingBox is not None:
+            spatial_node = BNode()
+
+            g.add((URIRef(self.baseURI), URIRef(RDFNamespaces.DCT['url'] + 'spatial'), spatial_node))
+            g.add((spatial_node, URIRef(RDFNamespaces.RDFS['url'] + 'type'),
+                   URIRef(RDFNamespaces.DCT['url'] + 'location')))
+            g.add((spatial_node, URIRef(RDFNamespaces.RDFS['url'] + 'type'),
+                   URIRef(RDFNamespaces.LOCN['url'] + 'geometry')))
+            g.add((spatial_node, URIRef(RDFNamespaces.LOCN['url'] + 'geometry'),
+                   Literal(self.bounding_box_to_wkt(), datatype=RDFNamespaces.GSP['url'] + 'wktLiteral')))
+            g.add((spatial_node, URIRef(RDFNamespaces.LOCN['url'] + 'geometry'),
+                   Literal(self.bounding_box_to_geojson(), datatype=IANAMimeTypes.GEOJSON.value)))
 
         return g
 
-    def toSchemaOrg(self):
+    def to_schema_org(self):
         """
         Converts an ISDEDatasetMetadata object to a Schema.org graph model
         
-        Returns:
-            A `rdflib.Graph` of the ISDEDatasetMetadata object serialised as a
-            Schema.org Dataset
+        :return: `rdflib.Graph` of the ISDEDatasetMetadata object serialised as a Schema.org Dataset
         """
         g = Graph()
 
         if self.title is not None:
-            g.add((URIRef(self.baseURI), URIRef(ISDERDFNamespaces.SDO['url'] + 'name'), Literal(self.title)))
+            g.add((URIRef(self.baseURI), URIRef(RDFNamespaces.SDO['url'] + 'name'), Literal(self.title)))
         if self.abstract is not None:
-            g.add((URIRef(self.baseURI), URIRef(ISDERDFNamespaces.SDO['url'] + 'description'), Literal(self.abstract)))
+            g.add((URIRef(self.baseURI), URIRef(RDFNamespaces.SDO['url'] + 'description'), Literal(self.abstract)))
         if self.identifier is not None:
-            g.add((URIRef(self.baseURI), URIRef(ISDERDFNamespaces.SDO['url'] + 'identifier'), Literal(self.identifier)))
+            g.add((URIRef(self.baseURI), URIRef(RDFNamespaces.SDO['url'] + 'identifier'), Literal(self.identifier)))
         if self.dateIssued is not None:
-            g.add((URIRef(self.baseURI), URIRef(ISDERDFNamespaces.SDO['url'] + 'datePublished'),
+            g.add((URIRef(self.baseURI), URIRef(RDFNamespaces.SDO['url'] + 'datePublished'),
                    Literal(self.dateIssued)))
         if self.keywords is not None:
             for kws in self.keywords:
                 for kw in kws.keyword:
                     if kw.url is not None:
-                        g.add((URIRef(self.baseURI), URIRef(ISDERDFNamespaces.SDO['url'] + 'keywords'),
+                        g.add((URIRef(self.baseURI), URIRef(RDFNamespaces.SDO['url'] + 'keywords'),
                                URIRef(kw.url)))
-                        g.add((URIRef(kw.url), URIRef(ISDERDFNamespaces.RDFS['url'] + 'type'),
-                               URIRef(ISDERDFNamespaces.SDO['url'] + 'DefinedTerm')))
+                        g.add((URIRef(kw.url), URIRef(RDFNamespaces.RDFS['url'] + 'type'),
+                               URIRef(RDFNamespaces.SDO['url'] + 'DefinedTerm')))
                     if kw.name is not None:
-                        g.add((URIRef(kw.url), URIRef(ISDERDFNamespaces.SDO['url'] + 'name'),
+                        g.add((URIRef(kw.url), URIRef(RDFNamespaces.SDO['url'] + 'name'),
                                Literal(kw.name)))
                     if kws.thesaurus['url'] is not None:
-                        g.add((URIRef(kw.url), URIRef(ISDERDFNamespaces.SDO['url'] + 'inDefinedTermSet'),
+                        g.add((URIRef(kw.url), URIRef(RDFNamespaces.SDO['url'] + 'inDefinedTermSet'),
                                Literal(kws.thesaurus['url'])))
-                        g.add((URIRef(kws.thesaurus['url']), URIRef(ISDERDFNamespaces.RDFS['url'] + 'type'),
-                               URIRef(ISDERDFNamespaces.SDO['url'] + 'DefinedTermSet')))
+                        g.add((URIRef(kws.thesaurus['url']), URIRef(RDFNamespaces.RDFS['url'] + 'type'),
+                               URIRef(RDFNamespaces.SDO['url'] + 'DefinedTermSet')))
                     if kws.thesaurus['title'] is not None:
-                        g.add((URIRef(kws.thesaurus['url']), URIRef(ISDERDFNamespaces.SDO['url'] + 'name'),
+                        g.add((URIRef(kws.thesaurus['url']), URIRef(RDFNamespaces.SDO['url'] + 'name'),
                                Literal(kws.thesaurus['title'])))
         for topic in self.topicCategories:
-            g.add((URIRef(self.baseURI), URIRef(ISDERDFNamespaces.SDO['url'] + 'keywords'), Literal(topic)))
+            g.add((URIRef(self.baseURI), URIRef(RDFNamespaces.SDO['url'] + 'keywords'), Literal(topic)))
         return g
+
+    def bounding_box_to_wkt(self):
+        """
+        Converts the geographic bounding box of the metadata object to a Well Known Text string
+
+        :return: A string containing the geographic bounding box encoded as Well Known Text
+
+        :raise: TypeError if the ISDEDatasetMetadata object's boundingBox attribute is not set
+        """
+        try:
+            return "POLYGON ((" + self.boundingBox['west'] + " " + self.boundingBox['south'] + \
+               "," + self.boundingBox['west'] + " " + self.boundingBox['north'] + "," + \
+               self.boundingBox['east'] + " " + self.boundingBox['north'] + "," + \
+               self.boundingBox['east'] + " " + self.boundingBox['south'] + "," + \
+               self.boundingBox['east'] + " " + self.boundingBox['north'] + "))"
+        except TypeError:
+            raise TypeError
+
+    def bounding_box_to_geojson(self):
+        """
+        Converts the geographic bounding box of the metadata object to a GeoJSON string
+
+        :return: String containing the geographic bounding box encoded as GeoJSON
+
+        :raise: TypeError if the ISDEDatasetMetadata object's boundingBox attribute is not set
+        """
+        try:
+            return json.dumps({"type": "Polygon",
+                  "coordinates": [[
+                      [self.boundingBox['west'], self.boundingBox['south']],
+                      [self.boundingBox['west'], self.boundingBox['north']],
+                      [self.boundingBox['east'], self.boundingBox['north']],
+                      [self.boundingBox['east'], self.boundingBox['south']],
+                      [self.boundingBox['west'], self.boundingBox['south']]
+                  ]]})
+        except TypeError:
+            raise TypeError

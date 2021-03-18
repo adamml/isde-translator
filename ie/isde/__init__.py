@@ -3,8 +3,12 @@
 A package for working with metadata from the Irish Spatial Data Exchange
 """
 
-from ie.isde.ISDERDFNamespaces import ISDERDFNamespaces
-from ie.isde.ISDEDatasetMetadata import ISDEDatasetMetadata
+from .RDFNamespaces import RDFNamespaces
+from .ISDEDatasetMetadata import ISDEDatasetMetadata
+from .ComplexTypes import ComplexTypes
+from .IANAMimeTypes import IANAMimeTypes
 
-__all__ = ['ISDERDFNamespaces',
-           'ISDEDatasetMetadata']
+__all__ = ['RDFNamespaces',
+           'ISDEDatasetMetadata',
+           'ComplexTypes',
+           'IANAMimeTypes']

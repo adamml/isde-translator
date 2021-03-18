@@ -5,3 +5,6 @@ __pycache__/
 .idea
 
 runner.py
+
+html
+*.html
