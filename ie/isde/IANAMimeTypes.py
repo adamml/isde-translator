@@ -13,4 +13,3 @@ class IANAMimeTypes(Enum):
     """
     `str` of the URL defining the IANA MIME Type for JavaScript Object Notation encoded to the GeoJSON standard for 
     exchange of geographic data
-    """
