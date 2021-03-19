@@ -11,5 +11,5 @@ class IANAMimeTypes(Enum):
     """
     GEOJSON = "https://www.iana.org/assignments/media-types/application/vnd.geo+json"
     """
-    JavaScript Object Notation encoded to the GeoJSON standard for exchange of geographjc data
-    """
+    `str` of the URL defining the IANA MIME Type for JavaScript Object Notation encoded to the GeoJSON standard for 
+    exchange of geographic data

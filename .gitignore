@@ -7,4 +7,7 @@ __pycache__/
 runner.py
 
 html
+
 *.html
+
+.coverage
