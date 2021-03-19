@@ -8,3 +8,5 @@ runner.py
 
 html
 *.html
+
+.coverage
