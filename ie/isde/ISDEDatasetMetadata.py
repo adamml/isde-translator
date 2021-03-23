@@ -1,4 +1,6 @@
 import urllib.request
+import warnings
+import json
 
 import warnings
 import json
@@ -152,6 +154,7 @@ class ISDEDatasetMetadata:
                 self.temporalExtent['start'] = md.identification.temporalextent_start
             except AttributeError:
                 pass
+              
             try:
                 self.temporalExtent['end'] = md.identification.temporalextent_end
             except AttributeError:
@@ -262,6 +265,7 @@ class ISDEDatasetMetadata:
             else:
                 if dist['url'] is not None:
                     g.add((URIRef(self.baseURI), URIRef(RDFNamespaces.RDFS['url'] + 'seeAlso'), URIRef(dist['url'])))
+
 
         return g
 
