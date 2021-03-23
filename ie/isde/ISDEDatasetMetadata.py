@@ -2,6 +2,9 @@ import urllib.request
 import warnings
 import json
 
+import warnings
+import json
+
 from owslib.iso import MD_Metadata, etree
 from rdflib import Graph, URIRef, Literal, BNode
 
@@ -24,6 +27,7 @@ class ISDEDatasetMetadata:
     """
     warnings.filterwarnings("ignore", message="the .identification", category=FutureWarning, module="owslib")
     warnings.filterwarnings("ignore", message="the .keywords", category=FutureWarning, module="owslib")
+
 
     _metadata = None
 
@@ -60,6 +64,13 @@ class ISDEDatasetMetadata:
     keywords: list = None
     """
     A list of Keywords describing the metadata object, conforming to the `owslib.iso.MD_Keywords class`
+    """
+    license: list = None
+    """
+    The license applied to the dataset.
+    
+    Note:
+        When building from an ISO19139 XML document, the licence is extracted from `gmd:useLimitation` elements
     """
     temporalExtent: dict = None
     """
@@ -143,6 +154,7 @@ class ISDEDatasetMetadata:
                 self.temporalExtent['start'] = md.identification.temporalextent_start
             except AttributeError:
                 pass
+              
             try:
                 self.temporalExtent['end'] = md.identification.temporalextent_end
             except AttributeError:
@@ -163,6 +175,11 @@ class ISDEDatasetMetadata:
                     if ol.description is not None:
                         dist['description'] = ol.description
                     self.distribution.append(dist)
+            except AttributeError:
+                pass
+
+            try:
+                print(md.identification.uselimitation)
             except AttributeError:
                 pass
 
@@ -228,6 +245,28 @@ class ISDEDatasetMetadata:
                 g.add((temporal_node, URIRef(RDFNamespaces.SDO['url'] + 'endDate'),
                        Literal(self.temporalExtent['end'])))
 
+        for dist in self.distribution:
+            if dist['protocol'] == 'WWW:DOWNLOAD-1.0-http--download':
+                if dist['url'] is not None:
+                    dist_node = BNode()
+                    g.add((URIRef(self.baseURI), URIRef(RDFNamespaces.DCAT['url'] + 'distribution'), dist_node))
+                    g.add((dist_node, URIRef(RDFNamespaces.RDF['url'] + 'type'),
+                           URIRef(RDFNamespaces.DCAT['url'] + 'Distribution')))
+                    g.add((dist_node, URIRef(RDFNamespaces.DCAT['url'] + 'accessURL'), URIRef(dist['url'])))
+                    if dist['name'] is not None:
+                        g.add((dist_node, URIRef(RDFNamespaces.DCT['url'] + 'title'), Literal(dist['name'])))
+                    elif dist['description'] is not None:
+                        g.add((dist_node, URIRef(RDFNamespaces.DCT['url'] + 'title'), Literal(dist['description'])))
+                    if dist['description'] is not None:
+                        g.add(
+                            (dist_node, URIRef(RDFNamespaces.DCT['url'] + 'description'), Literal(dist['description'])))
+                    elif dist['name'] is not None:
+                        g.add((dist_node, URIRef(RDFNamespaces.DCT['url'] + 'description'), Literal(dist['name'])))
+            else:
+                if dist['url'] is not None:
+                    g.add((URIRef(self.baseURI), URIRef(RDFNamespaces.RDFS['url'] + 'seeAlso'), URIRef(dist['url'])))
+
+
         return g
 
     def to_schema_org(self) -> Graph:
@@ -251,6 +290,7 @@ class ISDEDatasetMetadata:
         if self.dateIssued is not None:
             g.add((URIRef(self.baseURI), URIRef(RDFNamespaces.SDO['url'] + 'datePublished'),
                    Literal(self.dateIssued)))
+
         if self.boundingBox is not None:
             spatial_node = BNode()
             geo_node = BNode()
@@ -277,13 +317,16 @@ class ISDEDatasetMetadata:
                 g.add((geo_node, URIRef(RDFNamespaces.SDO['url'] + 'box'),
                        Literal('{0} {1} {2} {3}'.format(self.boundingBox['south'], self.boundingBox['south'],
                                                         self.boundingBox['north'], self.boundingBox['east']))))
+
         if self.keywords is not None:
             for kws in self.keywords:
                 for kw in kws.keyword:
                     if kw.url is not None:
                         g.add((URIRef(self.baseURI), URIRef(RDFNamespaces.SDO['url'] + 'keywords'),
                                URIRef(kw.url)))
+
                         g.add((URIRef(kw.url), URIRef(RDFNamespaces.RDF['url'] + 'type'),
+
                                URIRef(RDFNamespaces.SDO['url'] + 'DefinedTerm')))
                     if kw.name is not None:
                         g.add((URIRef(kw.url), URIRef(RDFNamespaces.SDO['url'] + 'name'),
@@ -291,13 +334,16 @@ class ISDEDatasetMetadata:
                     if kws.thesaurus['url'] is not None:
                         g.add((URIRef(kw.url), URIRef(RDFNamespaces.SDO['url'] + 'inDefinedTermSet'),
                                Literal(kws.thesaurus['url'])))
+
                         g.add((URIRef(kws.thesaurus['url']), URIRef(RDFNamespaces.RDF['url'] + 'type'),
+
                                URIRef(RDFNamespaces.SDO['url'] + 'DefinedTermSet')))
                     if kws.thesaurus['title'] is not None:
                         g.add((URIRef(kws.thesaurus['url']), URIRef(RDFNamespaces.SDO['url'] + 'name'),
                                Literal(kws.thesaurus['title'])))
         for topic in self.topicCategories:
             g.add((URIRef(self.baseURI), URIRef(RDFNamespaces.SDO['url'] + 'keywords'), Literal(topic)))
+
         if self.temporalExtent is not None:
             if self.temporalExtent['start'] is not None:
                 if self.temporalExtent['end'] is not None:
@@ -306,6 +352,14 @@ class ISDEDatasetMetadata:
                 else:
                     temporal_extent = Literal('{0}/..'.format(self.temporalExtent['start']))
                 g.add((URIRef(self.baseURI), URIRef(RDFNamespaces.SDO['url'] + 'temporalCoverage'), temporal_extent))
+        for dist in self.distribution:
+            if dist['protocol'] == 'WWW:DOWNLOAD-1.0-http--download':
+                if dist['url'] is not None:
+                    dist_node = BNode()
+                    g.add((URIRef(self.baseURI), URIRef(RDFNamespaces.SDO['url'] + 'distribution'), dist_node))
+                    g.add((dist_node, URIRef(RDFNamespaces.RDF['url'] + 'type'),
+                          URIRef(RDFNamespaces.SDO['url'] + 'DataDownload')))
+                    g.add((dist_node, URIRef(RDFNamespaces.SDO['url'] + 'contentUrl'), Literal(dist['url'])))
         return g
 
     def bounding_box_to_wkt(self) -> str:
