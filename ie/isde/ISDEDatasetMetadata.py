@@ -1,4 +1,5 @@
 import urllib.request
+
 import warnings
 import json
 
@@ -24,6 +25,7 @@ class ISDEDatasetMetadata:
     """
     warnings.filterwarnings("ignore", message="the .identification", category=FutureWarning, module="owslib")
     warnings.filterwarnings("ignore", message="the .keywords", category=FutureWarning, module="owslib")
+
 
     _metadata = None
 
@@ -284,6 +286,7 @@ class ISDEDatasetMetadata:
         if self.dateIssued is not None:
             g.add((URIRef(self.baseURI), URIRef(RDFNamespaces.SDO['url'] + 'datePublished'),
                    Literal(self.dateIssued)))
+
         if self.boundingBox is not None:
             spatial_node = BNode()
             geo_node = BNode()
@@ -310,13 +313,16 @@ class ISDEDatasetMetadata:
                 g.add((geo_node, URIRef(RDFNamespaces.SDO['url'] + 'box'),
                        Literal('{0} {1} {2} {3}'.format(self.boundingBox['south'], self.boundingBox['south'],
                                                         self.boundingBox['north'], self.boundingBox['east']))))
+
         if self.keywords is not None:
             for kws in self.keywords:
                 for kw in kws.keyword:
                     if kw.url is not None:
                         g.add((URIRef(self.baseURI), URIRef(RDFNamespaces.SDO['url'] + 'keywords'),
                                URIRef(kw.url)))
+
                         g.add((URIRef(kw.url), URIRef(RDFNamespaces.RDF['url'] + 'type'),
+
                                URIRef(RDFNamespaces.SDO['url'] + 'DefinedTerm')))
                     if kw.name is not None:
                         g.add((URIRef(kw.url), URIRef(RDFNamespaces.SDO['url'] + 'name'),
@@ -324,13 +330,16 @@ class ISDEDatasetMetadata:
                     if kws.thesaurus['url'] is not None:
                         g.add((URIRef(kw.url), URIRef(RDFNamespaces.SDO['url'] + 'inDefinedTermSet'),
                                Literal(kws.thesaurus['url'])))
+
                         g.add((URIRef(kws.thesaurus['url']), URIRef(RDFNamespaces.RDF['url'] + 'type'),
+
                                URIRef(RDFNamespaces.SDO['url'] + 'DefinedTermSet')))
                     if kws.thesaurus['title'] is not None:
                         g.add((URIRef(kws.thesaurus['url']), URIRef(RDFNamespaces.SDO['url'] + 'name'),
                                Literal(kws.thesaurus['title'])))
         for topic in self.topicCategories:
             g.add((URIRef(self.baseURI), URIRef(RDFNamespaces.SDO['url'] + 'keywords'), Literal(topic)))
+
         if self.temporalExtent is not None:
             if self.temporalExtent['start'] is not None:
                 if self.temporalExtent['end'] is not None:
