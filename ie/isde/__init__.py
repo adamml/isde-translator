@@ -94,10 +94,14 @@ __docformat__ = "google"
 from .ISDEDatasetMetadata import ISDEDatasetMetadata
 from .ComplexTypes import ComplexTypes
 from .IANAMimeTypes import IANAMimeTypes
+from .JSONLDFraming import JSONLDFraming
 from .RDFNamespaces import RDFNamespaces
+from .XMLQueries import XMLQueries
 
 
 __all__ = ['ISDEDatasetMetadata',
            'ComplexTypes',
            'IANAMimeTypes',
-           'RDFNamespaces']
+           'JSONLDFraming',
+           'RDFNamespaces',
+           'XMLQueries']

@@ -61,6 +61,13 @@ class ISDEDatasetMetadata:
     """
     A list of Keywords describing the metadata object, conforming to the `owslib.iso.MD_Keywords class`
     """
+    license: list = None
+    """
+    The license applied to the dataset.
+    
+    Note:
+        When building from an ISO19139 XML document, the licence is extracted from `gmd:useLimitation` elements
+    """
     temporalExtent: dict = None
     """
     The time range of the dataset described by the metadata object as a `dict` with keys of `start` and `end`. The 
@@ -166,6 +173,11 @@ class ISDEDatasetMetadata:
             except AttributeError:
                 pass
 
+            try:
+                print(md.identification.uselimitation)
+            except AttributeError:
+                pass
+
         self.baseURI = url
         return self
 
@@ -227,6 +239,27 @@ class ISDEDatasetMetadata:
             if self.temporalExtent['end'] is not None:
                 g.add((temporal_node, URIRef(RDFNamespaces.SDO['url'] + 'endDate'),
                        Literal(self.temporalExtent['end'])))
+
+        for dist in self.distribution:
+            if dist['protocol'] == 'WWW:DOWNLOAD-1.0-http--download':
+                if dist['url'] is not None:
+                    dist_node = BNode()
+                    g.add((URIRef(self.baseURI), URIRef(RDFNamespaces.DCAT['url'] + 'distribution'), dist_node))
+                    g.add((dist_node, URIRef(RDFNamespaces.RDF['url'] + 'type'),
+                           URIRef(RDFNamespaces.DCAT['url'] + 'Distribution')))
+                    g.add((dist_node, URIRef(RDFNamespaces.DCAT['url'] + 'accessURL'), URIRef(dist['url'])))
+                    if dist['name'] is not None:
+                        g.add((dist_node, URIRef(RDFNamespaces.DCT['url'] + 'title'), Literal(dist['name'])))
+                    elif dist['description'] is not None:
+                        g.add((dist_node, URIRef(RDFNamespaces.DCT['url'] + 'title'), Literal(dist['description'])))
+                    if dist['description'] is not None:
+                        g.add(
+                            (dist_node, URIRef(RDFNamespaces.DCT['url'] + 'description'), Literal(dist['description'])))
+                    elif dist['name'] is not None:
+                        g.add((dist_node, URIRef(RDFNamespaces.DCT['url'] + 'description'), Literal(dist['name'])))
+            else:
+                if dist['url'] is not None:
+                    g.add((URIRef(self.baseURI), URIRef(RDFNamespaces.RDFS['url'] + 'seeAlso'), URIRef(dist['url'])))
 
         return g
 
@@ -306,6 +339,14 @@ class ISDEDatasetMetadata:
                 else:
                     temporal_extent = Literal('{0}/..'.format(self.temporalExtent['start']))
                 g.add((URIRef(self.baseURI), URIRef(RDFNamespaces.SDO['url'] + 'temporalCoverage'), temporal_extent))
+        for dist in self.distribution:
+            if dist['protocol'] == 'WWW:DOWNLOAD-1.0-http--download':
+                if dist['url'] is not None:
+                    dist_node = BNode()
+                    g.add((URIRef(self.baseURI), URIRef(RDFNamespaces.SDO['url'] + 'distribution'), dist_node))
+                    g.add((dist_node, URIRef(RDFNamespaces.RDF['url'] + 'type'),
+                          URIRef(RDFNamespaces.SDO['url'] + 'DataDownload')))
+                    g.add((dist_node, URIRef(RDFNamespaces.SDO['url'] + 'contentUrl'), Literal(dist['url'])))
         return g
 
     def bounding_box_to_wkt(self) -> str:
