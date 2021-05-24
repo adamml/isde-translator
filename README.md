@@ -6,10 +6,12 @@
 2. run `python setup.py install`
 
 ## Dependencies
-- [OWSLib](https://pypi.org/project/OWSLib/) - For parsing ISO19139 XML
+- [OWSLib](https://pypi.org/project/OWSLib/) - For parsing ISO19139 XML 
+- [PyLD](https://pypi.org/project/PyLD/) - For serializng framed JSON-LD documents
 - [PyYAML](https://pypi.org/project/PyYAML/) - For serialising the ISDE Metadata as YAML
 - [rdflib](https://pypi.org/project/rdflib/) - For building DCAT and Schema.org serialisations
 - [rdflib-jsonld](https://pypi.org/project/rdflib-jsonld/) - For serialising Schema.org as JSON following the JSON-LD convention
+- [xmltodict](https://pypi.org/project/xmltodict/) - For parsing the ISO XML where OWSLib falls down
 
 ## Example usage
 
