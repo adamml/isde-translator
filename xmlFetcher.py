@@ -35,6 +35,6 @@ with urllib.request.urlopen('http://data.marine.ie/geonetwork/srv/eng/portal.sit
         except UnicodeEncodeError:
                 print("UnicodeEncodeError: " + loc.text.replace('?language=all', '/formatters/xml'))
         except HTTPError:
-                print("HTTP Error: " + loc.text.replace('?language=all', '/formatters/xml'))
+                print("HTTPError: " + loc.text.replace('?language=all', '/formatters/xml'))
         except TypeError:
-                print("HTTP Error: " + loc.text.replace('?language=all', '/formatters/xml'))
+                print("TypeError: " + loc.text.replace('?language=all', '/formatters/xml'))
