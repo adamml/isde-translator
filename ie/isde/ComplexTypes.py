@@ -21,7 +21,7 @@ class ComplexTypes(Enum):
     A Keyword used to describe the metadata object. A Keyword may come from a controlled vocabulary and be published 
     online with a URL.
     """
-    LICENCE = {"name": None, "url": None}
+    LICENCE = {"name": None, "spdx_url": None, "url": None}
     """
     The licence applied to the dataset
     """
