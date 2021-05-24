@@ -85,7 +85,7 @@ All new contributions should contain unit tests in the `test.py` file.
 
 ## License
 
-This module is made avalable under the Apache 2.0 license.
+This module is made available under the Apache 2.0 license.
 
 """
 
@@ -95,13 +95,13 @@ from .ISDEDatasetMetadata import ISDEDatasetMetadata
 from .ComplexTypes import ComplexTypes
 from .IANAMimeTypes import IANAMimeTypes
 from .JSONLDFraming import JSONLDFraming
+from .Licenses import Licenses
 from .RDFNamespaces import RDFNamespaces
-from .XMLQueries import XMLQueries
 
 
 __all__ = ['ISDEDatasetMetadata',
            'ComplexTypes',
            'IANAMimeTypes',
            'JSONLDFraming',
-           'RDFNamespaces',
-           'XMLQueries']
+           'Licenses',
+           'RDFNamespaces']

@@ -44,3 +44,7 @@ class RDFNamespaces:
     """
     Schema.org vocab
     """
+    SKOS: dict = {'ns': 'skos', 'url': 'http://www.w3.org/2004/02/skos/core#'}
+    """
+    Simple Knowledge Organization System vocabulary
+    """
