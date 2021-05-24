@@ -4,6 +4,9 @@ import warnings
 import json
 import xmltodict
 
+import warnings
+import json
+
 from owslib.iso import MD_Metadata, etree
 from rdflib import Graph, URIRef, Literal, BNode
 
@@ -27,6 +30,7 @@ class ISDEDatasetMetadata:
     """
     warnings.filterwarnings("ignore", message="the .identification", category=FutureWarning, module="owslib")
     warnings.filterwarnings("ignore", message="the .keywords", category=FutureWarning, module="owslib")
+
 
     _metadata = None
 
@@ -158,7 +162,6 @@ class ISDEDatasetMetadata:
                 self.temporal_extent['start'] = md.identification.temporalextent_start
             except AttributeError:
                 pass
-
             try:
                 self.temporal_extent['end'] = md.identification.temporalextent_end
             except AttributeError:
