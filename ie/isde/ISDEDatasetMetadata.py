@@ -216,7 +216,7 @@ class ISDEDatasetMetadata:
                 except KeyError:
                     pass
             metadata.close()
-        self.base_uri = url
+        self.base_uri = url.replace('/formatters/xml', '')
         return self
 
     def to_dcat(self) -> Graph:
@@ -351,13 +351,13 @@ class ISDEDatasetMetadata:
                 g.add((spatial_node, URIRef(RDFNamespaces.RDF['url'] + 'type'),
                        URIRef(RDFNamespaces.SDO['url'] + 'Place')))
                 g.add((spatial_node, URIRef(RDFNamespaces.SDO['url'] + 'geo'), geo_node))
-                g.add((spatial_node, URIRef(RDFNamespaces.SDO['url'] + 'latitude'), self.bounding_box['north']))
-                g.add((spatial_node, URIRef(RDFNamespaces.SDO['url'] + 'longitude'), self.bounding_box['west']))
+                g.add((spatial_node, URIRef(RDFNamespaces.SDO['url'] + 'latitude'), Literal(self.bounding_box['north'])))
+                g.add((spatial_node, URIRef(RDFNamespaces.SDO['url'] + 'longitude'), Literal(self.bounding_box['west'])))
                 g.add((spatial_node, URIRef(RDFNamespaces.SDO['url'] + 'geo'), geo_node))
                 g.add((geo_node, URIRef(RDFNamespaces.RDF['url'] + 'type'),
                        URIRef(RDFNamespaces.SDO['url'] + 'GeoCoordinates')))
-                g.add((geo_node, URIRef(RDFNamespaces.SDO['url'] + 'latitude'), self.bounding_box['north']))
-                g.add((geo_node, URIRef(RDFNamespaces.SDO['url'] + 'longitude'), self.bounding_box['west']))
+                g.add((geo_node, URIRef(RDFNamespaces.SDO['url'] + 'latitude'), Literal(self.bounding_box['north'])))
+                g.add((geo_node, URIRef(RDFNamespaces.SDO['url'] + 'longitude'), Literal(self.bounding_box['west'])))
             else:
                 g.add((URIRef(self.base_uri), URIRef(RDFNamespaces.SDO['url'] + 'spatialCoverage'), spatial_node))
                 g.add((spatial_node, URIRef(RDFNamespaces.RDF['url'] + 'type'),
@@ -412,8 +412,8 @@ class ISDEDatasetMetadata:
                            URIRef(RDFNamespaces.SDO['url'] + 'DataDownload')))
                     g.add((dist_node, URIRef(RDFNamespaces.SDO['url'] + 'contentUrl'), Literal(dist['url'])))
         if self.license is not None:
-            g.add((URIRef(self.base_uri), URIRef(RDFNamespaces.SDO['url'] + 'license'), self.license['url']))
-            g.add((URIRef(self.base_uri), URIRef(RDFNamespaces.SDO['url'] + 'license'), self.license['spdx_url']))
+            g.add((URIRef(self.base_uri), URIRef(RDFNamespaces.SDO['url'] + 'license'), URIRef(self.license['url'])))
+            g.add((URIRef(self.base_uri), URIRef(RDFNamespaces.SDO['url'] + 'license'), URIRef(self.license['spdx_url'])))
         if self.use_limitations is not None:
             dcat_limitations = None
             for limit in self.use_limitations:
