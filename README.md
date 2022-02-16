@@ -1,5 +1,5 @@
 
-[Documentation](https://adamml.github.io/isde-translator/html/isde/index.html)
+[Documentation](https://adamml.github.io/isde-translator/index.html)
 
 ## Install
 1. Download the repository and unzip it somewhere
