@@ -5,31 +5,20 @@
 1. Download the repository and unzip it somewhere
 2. run `python setup.py install`
 
-## Dependencies
-- [OWSLib](https://pypi.org/project/OWSLib/) - For parsing ISO19139 XML 
-- [PyLD](https://pypi.org/project/PyLD/) - For serializng framed JSON-LD documents
-- [PyYAML](https://pypi.org/project/PyYAML/) - For serialising the ISDE Metadata as YAML
-- [rdflib](https://pypi.org/project/rdflib/) - For building DCAT and Schema.org serialisations
-- [rdflib-jsonld](https://pypi.org/project/rdflib-jsonld/) - For serialising Schema.org as JSON following the JSON-LD convention
-- [xmltodict](https://pypi.org/project/xmltodict/) - For parsing the ISO XML where OWSLib falls down
-
 ## Example usage
 
+```console
+python translate.py http://data.marine.ie/geonetwork/srv/api/records/ie.marine.data:dataset.1827/formatters/xml -d 
+```
+
 ```python
-from ie import ISDEDatasetMetadata, ISDERDFNamespaces
-from yaml import dump, Dumper
+import isdetranslator
+import urllib.request
 
-context = {"@vocab": ISDERDFNamespaces.SDO['url']}
+with urllib.request.urlopen('http://isde.ie/geonetwork/srv/api/records/ie.nbdc.dataset.RareMarineFishes1786to2008/formatters/xml') as xmldata:
+	xmlstr = xmldata.read().decode('utf-8')
 
-print(ISDEDatasetMetadata().from_iso(
-    r'https://irishspatialdataexchange.blob.core.windows.net/metadata/xml/ie_marine_data__dataset_1000.xml').to_dcat().serialize(
-    format='turtle').decode('utf-8'))
+ds = isdetranslator.Dataset()
+ds.fromXML(xmlstr)
 
-print(ISDEDatasetMetadata().from_iso(
-    r'https://irishspatialdataexchange.blob.core.windows.net/metadata/xml/ie_marine_data__dataset_1000.xml').to_schema_org().serialize(
-    format='json-ld', context=context).decode('utf-8'))
-
-print(dump(ISDEDatasetMetadata().from_iso(
-    r'https://irishspatialdataexchange.blob.core.windows.net/metadata/xml/ie_marine_data__dataset_1000.xml'),
-    Dumper=Dumper))
 ```
