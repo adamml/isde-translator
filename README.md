@@ -3,7 +3,8 @@
 
 ## Install
 1. Download the repository and unzip it somewhere
-2. run `python setup.py install`
+1. In a terminal, navigate to the unzipped repository archive
+1. Run `python setup.py install` or `pip install -e .`
 
 ## Example usage
 
