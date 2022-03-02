@@ -1,11 +1,5 @@
-__pycache__/
-*.py[cod]
-*$py.class
+# Ignore compiled class files
+.class
 
-.idea
-
-runner.py
-
-html
-
-.coverage
+# Ignore Maven target folder
+target
