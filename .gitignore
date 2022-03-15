@@ -3,3 +3,5 @@
 
 # Ignore Maven target folder
 target
+
+javadoc-command
