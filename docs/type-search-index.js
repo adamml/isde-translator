@@ -1,1 +1,0 @@
-typeSearchIndex = [{"l":"All Classes and Interfaces","u":"allclasses-index.html"},{"p":"ie.isde","l":"App"},{"p":"ie.isde","l":"BoundingBox"},{"p":"ie.isde.license","l":"CCBY3"},{"p":"ie.isde.license","l":"CCBY4"},{"p":"ie.isde.license","l":"CCBYNC4"},{"p":"ie.isde.license","l":"CCBYND4"},{"p":"ie.isde","l":"Dataset"}];updateSearchResults();

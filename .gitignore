@@ -1,7 +1,7 @@
-# Ignore compiled class files
-.class
+.mypy_cache/
 
-# Ignore Maven target folder
-target
+.pytest_cache/
 
-javadoc-command
+__pycache__/
+
+*.py[cod]
