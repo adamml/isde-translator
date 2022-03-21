@@ -1,4 +1,4 @@
-"""This module is designed for the translation of spatial dataset metadata
+"""This module is designed for the translation of spatial isde_dataset metadata
 between a number of different serialisations.
 
 #### Motivation
@@ -49,16 +49,17 @@ class Dataset(object):
             raise TypeError
         if not isinstance(source, xml.etree.ElementTree.ElementTree):
             raise TypeError
-        self._abstract: str
-        self._bounding_box: BoundingBox
-        self._citation: str
-        self._doi: str
-        self._end_date: str
-        self._identifier: str
-        self._keywords: list[str]
-        self._source: str
-        self._title: str
-        self._start_date: str
+        self._abstract: str = str()
+        self._bounding_box: BoundingBox = BoundingBox(float(), float(),
+                                                      float(), float())
+        self._citation: str = str()
+        self._doi: str = str()
+        self._end_date: str = str()
+        self._identifier: str = str()
+        self._keywords: list[str] = list(str())
+        self._source: str = str()
+        self._title: str = str()
+        self._start_date: str = str()
         if source_type == DatasetSourceType.ISO_XML:
             self._dataset_from_iso_xml(source)
 
@@ -74,7 +75,21 @@ class Dataset(object):
         try:
             return self._bounding_box
         except AttributeError:
-            return BoundingBox(0, 0, 0, 0)
+            return BoundingBox(float(), float(), float(), float())
+
+    @property
+    def citation_string(self) -> str:
+        try:
+            return self._citation
+        except AttributeError:
+            return str()
+
+    @property
+    def digital_object_identifier(self) -> str:
+        try:
+            return self._doi
+        except AttributeError:
+            return str()
 
     @property
     def identifier(self) -> str:
@@ -82,6 +97,13 @@ class Dataset(object):
             return self._identifier
         except AttributeError:
             return str()
+
+    @property
+    def keywords(self) -> list:
+        try:
+            return self._keywords
+        except AttributeError:
+            return list(str())
 
     @property
     def title(self) -> str:
@@ -98,14 +120,16 @@ class Dataset(object):
             self._title = str(i.text)
         e = source.findall(_XPathQueries.dataset_abstract)
         for i in e:
-            self._abstract = str(i.text)
+            _abstract: str = str(i.text)
+            _abstract = _abstract.strip()
+            self._abstract = _abstract.replace("\n", " ")
         e = source.findall(_XPathQueries.dataset_file_identifier)
         for i in e:
             self._identifier = str(i.text)
-        north: float = float(0)
-        south: float = float(0)
-        east: float = float(0)
-        west: float = float(0)
+        north: float = float()
+        south: float = float()
+        east: float = float()
+        west: float = float()
         e = source.findall(_XPathQueries.dataset_bounding_north)
         for i in e:
             north = float(str(i.text))
@@ -122,3 +146,9 @@ class Dataset(object):
             self._bounding_box = BoundingBox(north, south, east, west)
         except TypeError:
             pass
+        e = source.findall(_XPathQueries.dataset_themes)
+        for i in e:
+            self._keywords.append(str(i.text))
+        e = source.findall(_XPathQueries.dataset_uri)
+        for i in e:
+            self._doi = str(i.text)
