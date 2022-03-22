@@ -1,0 +1,6 @@
+flake8>=4.0.1
+mypy>=0.941
+pytest>=7.1.1
+pytest-flake8>=1.1.1
+pytest-mypy>=0.9.1
+tox>=3.24.5
