@@ -28,10 +28,10 @@ class BoundingBox(object):
 
     """
     def __init__(self, north: float, south: float, east: float, west: float):
-        self._north: float
-        self._south: float
-        self._east: float
-        self._west: float
+        self._north: float = float()
+        self._south: float = float()
+        self._east: float = float()
+        self._west: float = float()
 
         if not isinstance(north, float):
             raise TypeError
@@ -48,36 +48,25 @@ class BoundingBox(object):
         self._west = west
 
     def __str__(self):
-        return str(vars(self))
+        return str({"north": self._north, "south": self._south,
+                    "east": self._east, "west": self._west})
 
     @property
     def north(self) -> float:
         """float: The northernmost extent of the `BoundingBox`"""
-        try:
-            return self._north
-        except AttributeError:
-            return float()
+        return self._north
 
     @property
     def south(self) -> float:
         """float: The southernmost extent of the `BoundingBox`"""
-        try:
-            return self._south
-        except AttributeError:
-            return float()
+        return self._south
 
     @property
     def east(self) -> float:
         """float: The easternmost extent of the `BoundingBox`"""
-        try:
-            return self._east
-        except AttributeError:
-            return float()
+        return self._east
 
     @property
     def west(self) -> float:
         """float: The westernmost extent of the `BoundingBox`"""
-        try:
-            return self._west
-        except AttributeError:
-            return float()
+        return self._west

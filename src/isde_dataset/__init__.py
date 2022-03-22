@@ -1,18 +1,5 @@
-"""This module is designed for the translation of spatial isde_dataset metadata
-between a number of different serialisations.
-
-#### Motivation
-
-#### Installation
-
-#### Dependencies
-
-#### Example usage
-
-#### Development dependenices
-
-#### Contributing
-
+"""
+.. include:: README.md
 """
 
 from .boundingbox import BoundingBox
@@ -57,6 +44,7 @@ class Dataset(object):
         self._end_date: str = str()
         self._identifier: str = str()
         self._keywords: list[str] = list(str())
+        self._purpose: str = str()
         self._source: str = str()
         self._title: str = str()
         self._start_date: str = str()
@@ -65,90 +53,78 @@ class Dataset(object):
 
     @property
     def abstract(self) -> str:
-        try:
-            return self._abstract
-        except AttributeError:
-            return str()
+        return self._abstract
 
     @property
     def bounding_box(self) -> BoundingBox:
-        try:
-            return self._bounding_box
-        except AttributeError:
-            return BoundingBox(float(), float(), float(), float())
+        return self._bounding_box
 
     @property
     def citation_string(self) -> str:
-        try:
-            return self._citation
-        except AttributeError:
-            return str()
+        return self._citation
 
     @property
     def digital_object_identifier(self) -> str:
-        try:
-            return self._doi
-        except AttributeError:
-            return str()
+        return self._doi
 
     @property
     def identifier(self) -> str:
-        try:
-            return self._identifier
-        except AttributeError:
-            return str()
+        return self._identifier
 
     @property
     def keywords(self) -> list:
-        try:
-            return self._keywords
-        except AttributeError:
-            return list(str())
+        return self._keywords
 
     @property
     def title(self) -> str:
-        try:
-            return self._title
-        except AttributeError:
-            return str()
+        return self._title
 
     def _dataset_from_iso_xml(self, source: xml.etree.ElementTree.ElementTree):
-        e: List[xml.etree.ElementTree.Element] = source.findall(
-                                                _XPathQueries.dataset_title)
-        i: xml.etree.ElementTree.Element
-        for i in e:
-            self._title = str(i.text)
-        e = source.findall(_XPathQueries.dataset_abstract)
-        for i in e:
-            _abstract: str = str(i.text)
+        try:
+            e: List[xml.etree.ElementTree.Element]
+            i: xml.etree.ElementTree.Element
+            self._title = \
+                _str_from_st_and_xpath(source, _XPathQueries.dataset_title)
+            _abstract: str = \
+                _str_from_st_and_xpath(source, _XPathQueries.dataset_abstract)
             _abstract = _abstract.strip()
             self._abstract = _abstract.replace("\n", " ")
-        e = source.findall(_XPathQueries.dataset_file_identifier)
-        for i in e:
-            self._identifier = str(i.text)
-        north: float = float()
-        south: float = float()
-        east: float = float()
-        west: float = float()
-        e = source.findall(_XPathQueries.dataset_bounding_north)
-        for i in e:
-            north = float(str(i.text))
-        e = source.findall(_XPathQueries.dataset_bounding_south)
-        for i in e:
-            south = float(str(i.text))
-        e = source.findall(_XPathQueries.dataset_bounding_east)
-        for i in e:
-            east = float(str(i.text))
-        e = source.findall(_XPathQueries.dataset_bounding_west)
-        for i in e:
-            west = float(str(i.text))
-        try:
+            self._identifier = \
+                _str_from_st_and_xpath(source,
+                                       _XPathQueries.dataset_file_identifier)
+            north: float = float()
+            south: float = float()
+            east: float = float()
+            west: float = float()
+            e = source.findall(_XPathQueries.dataset_bounding_north)
+            for i in e:
+                north = float(str(i.text))
+            e = source.findall(_XPathQueries.dataset_bounding_south)
+            for i in e:
+                south = float(str(i.text))
+            e = source.findall(_XPathQueries.dataset_bounding_east)
+            for i in e:
+                east = float(str(i.text))
+            e = source.findall(_XPathQueries.dataset_bounding_west)
+            for i in e:
+                west = float(str(i.text))
             self._bounding_box = BoundingBox(north, south, east, west)
-        except TypeError:
+            e = source.findall(_XPathQueries.dataset_themes)
+            for i in e:
+                self._keywords.append(str(i.text))
+            self._doi = \
+                _str_from_st_and_xpath(source, _XPathQueries.dataset_uri)
+            self._citation = \
+                _str_from_st_and_xpath(source, _XPathQueries.dataset_citation)
+        except AttributeError:
             pass
-        e = source.findall(_XPathQueries.dataset_themes)
-        for i in e:
-            self._keywords.append(str(i.text))
-        e = source.findall(_XPathQueries.dataset_uri)
-        for i in e:
-            self._doi = str(i.text)
+
+
+def _str_from_st_and_xpath(tree: xml.etree.ElementTree.ElementTree,
+                           xpath: str) -> str:
+    e: List[xml.etree.ElementTree.Element] = tree.findall(xpath)
+    i: xml.etree.ElementTree.Element
+    return_string: str = str()
+    for i in e:
+        return_string = str(i.text)
+    return return_string

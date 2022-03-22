@@ -17,4 +17,7 @@ def test_geological_survey_ireland_dataset():
     assert ds.keywords[1] == "geoscientificInformation"
     assert ds.keywords[2] == "environment"
     assert ds.keywords[3] == "biota"
+    with pytest.raises(IndexError):
+        ds.keywords[4]
     assert ds.digital_object_identifier == str()
+    assert ds.citation_string == str()

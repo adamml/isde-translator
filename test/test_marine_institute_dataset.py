@@ -18,4 +18,7 @@ def test_marine_institute_dataset():
     assert ds.keywords[1] == "climatologyMeteorologyAtmosphere"
     assert ds.keywords[2] == "location"
     assert ds.keywords[3] == "oceans"
+    with pytest.raises(IndexError):
+        ds.keywords[4]
     assert ds.digital_object_identifier == "10.20393/edd58462-ae36-44b2-bf36-0ef06c6e8357"
+    assert ds.citation_string == "de Eyto, Elvira (1); Dillane, Mary (1); Cooney, Joseph (1); Hughes, Pat (1); Murphy, Michael (1); Nixon, Pat (1); Sweeney, David (1); Poole, Russell (1); Rouen, Martin (2). (2019) Water quality and meteorological data from the Lough Feeagh Automatic Water Quality Monitoring Station (AWQMS), 2004-2019 Marine Institute, Ireland. 10/c5st. (1) Marine Institute; Ireland; (2) Lakeland Instrumentation Ltd; United Kingdom."

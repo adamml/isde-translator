@@ -15,4 +15,7 @@ def test_noaa_ioos_dataset():
     assert ds.bounding_box.east == float()
     assert ds.bounding_box.west == float()
     assert ds.keywords[0] == "geoscientificInformation"
+    with pytest.raises(IndexError):
+        ds.keywords[1]
     assert ds.digital_object_identifier == str()
+    assert ds.citation_string == str()

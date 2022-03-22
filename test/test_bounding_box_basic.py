@@ -8,6 +8,7 @@ def test_bounding_box_basic():
     assert bb.south == -90
     assert bb.east == 180
     assert bb.west == -180
+    assert str(bb) == "{'north': 90.0, 'south': -90.0, 'east': 180.0, 'west': -180.0}"
 
 
 def test_bounding_box_invocation():
